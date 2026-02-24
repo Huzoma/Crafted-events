@@ -1,5 +1,6 @@
 "use server"; 
 
+import { cookies } from "next/headers";
 import { db } from "./db";
 
 export async function registerAttendee(formData) {
@@ -97,5 +98,39 @@ export async function verifyTicket(qrCodeId) {
   } catch (error) {
     console.error("Verification error:", error);
     return { success: false, status: "ERROR", message: "System error. Please try scanning again." };
+  }
+}
+
+export async function verifyScannerPin(pin) {
+  try {
+    // 1. Check if the PIN exists and hasn't been deactivated by the Host
+    const validPin = await db.scannerPin.findFirst({
+      where: { 
+        pin: pin,
+        isActive: true 
+      }
+    });
+
+    if (!validPin) {
+      return { success: false, error: "Invalid or deactivated PIN." };
+    }
+
+    // 2. Generate the secure cookie
+    // In Next.js 15, cookies() is asynchronous, so we must await it!
+    const cookieStore = await cookies();
+    
+    // We set an 'httpOnly' cookie. 
+    // Why? It prevents malicious browser extensions from stealing the session!
+    cookieStore.set("scanner_session", "true", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 12, // Automatically expires in 12 hours
+      path: "/",
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("PIN Verification Error:", error);
+    return { success: false, error: "System error. Please try again." };
   }
 }
