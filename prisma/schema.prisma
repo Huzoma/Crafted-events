@@ -67,3 +67,14 @@ model Admin {
   loginCode   String   
   createdAt   DateTime @default(now())
 }
+
+// 5. VOLUNTEER SCANNER PINS
+model ScannerPin {
+  id        String   @id @default(uuid())
+  pin       String   @unique // The actual 4 or 6 digit code
+  label     String   // Identifies who is using it (e.g., "Main Gate", "John's Phone")
+  isActive  Boolean  @default(true) // The Host's "kill switch" to instantly revoke access
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
