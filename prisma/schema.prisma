@@ -1,0 +1,69 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. THE EVENTS
+model Event {
+  id            String         @id @default(uuid())
+  slug          String         @unique // e.g. "summit-2026"
+  name          String
+  date          DateTime
+  physicalLimit Int            @default(150) // The 150 physical seat limit
+  
+  registrations Registration[]
+  createdAt     DateTime       @default(now())
+}
+
+// 2. THE USERS
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  phone         String?
+  
+  registrations Registration[]
+  createdAt     DateTime       @default(now())
+}
+
+// Add this Enum for access control
+enum RegistrationStatus {
+  PENDING
+  CHECKED_IN
+}
+
+// 3. REGISTRATIONS (Merged and Fixed)
+model Registration {
+  id          String   @id @default(uuid())
+  
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id])
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  ticketType  String   // "PHYSICAL" or "VIRTUAL"
+  accessCode  String   @unique // The code sent to their email
+  
+  // --- NEW ACCESS CONTROL FIELDS ---
+  qrCodeId    String   @unique @default(uuid()) // The secure, unguessable QR payload
+  status      RegistrationStatus @default(PENDING) // Defaults to not checked-in
+  checkedInAt DateTime? // Records exactly when they walked through the door
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([eventId, userId]) // Prevents double registration
+}
+
+// 4. ADMINS
+model Admin {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  loginCode   String   
+  createdAt   DateTime @default(now())
+}
