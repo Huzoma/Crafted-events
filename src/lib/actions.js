@@ -162,3 +162,59 @@ export async function verifyHostLogin(email, loginCode) {
     return { success: false, error: "System error. Please try again." };
   }
 }
+
+// 1. Fetch Real-Time Event Stats
+export async function getDashboardStats() {
+  try {
+    const totalPhysical = await db.registration.count({ where: { ticketType: "PHYSICAL" } });
+    const totalVirtual = await db.registration.count({ where: { ticketType: "VIRTUAL" } });
+    const totalCheckedIn = await db.registration.count({ where: { status: "CHECKED_IN" } });
+    
+    return { success: true, stats: { totalPhysical, totalVirtual, totalCheckedIn } };
+  } catch (error) {
+    return { success: false, error: "Failed to load stats." };
+  }
+}
+
+// 2. Fetch all Volunteer PINs
+export async function getScannerPins() {
+  try {
+    const pins = await db.scannerPin.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    return { success: true, pins };
+  } catch (error) {
+    return { success: false, error: "Failed to load PINs." };
+  }
+}
+
+// 3. Generate a new PIN
+export async function generateScannerPin(label) {
+  try {
+    // Generate a random 4-digit number string
+    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+    
+    await db.scannerPin.create({
+      data: {
+        pin: newPin,
+        label: label
+      }
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to generate PIN." };
+  }
+}
+
+// 4. The Kill Switch: Revoke a PIN
+export async function revokeScannerPin(id, currentStatus) {
+  try {
+    await db.scannerPin.update({
+      where: { id },
+      data: { isActive: !currentStatus } // Toggles between true and false
+    });
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Failed to update PIN status." };
+  }
+}
