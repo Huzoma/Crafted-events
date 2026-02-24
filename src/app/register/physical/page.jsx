@@ -44,7 +44,13 @@ export default function PhysicalRegistration() {
           
           <nav className="absolute top-8 left-6 lg:left-20 flex items-center">
             <Link href="/" className="text-xl font-heading font-bold tracking-tighter flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <Aperture className="w-6 h-6 text-blue-500" />
+              <Image 
+                src="/logo-CEX.png" 
+                alt="Crafted Excellence Logo" 
+                width={28} 
+                height={28} 
+                className="object-contain rounded-md" 
+              />
               Crafted<span className="text-slate-500">Excellence</span>
             </Link>
           </nav>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, MonitorPlay, Ticket, Calendar, MapPin, Aperture } from "lucide-react";
 
 export default function LandingPage() {
@@ -13,11 +14,17 @@ export default function LandingPage() {
       {/* Navigation Area */}
       <nav className="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center relative z-10">
         {/* Added font-heading here for the logo text */}
-        <div className="text-xl font-heading font-bold tracking-tighter flex items-center gap-2">
-          <Aperture className="w-6 h-6 text-blue-500" />
+        <Link href="/" className="text-xl font-heading font-bold tracking-tighter flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <Image 
+            src="/logo-CEX.png" 
+            alt="Crafted Excellence Logo" 
+            width={28} 
+            height={28} 
+            className="object-contain rounded-md" 
+          />
           Crafted<span className="text-slate-500">Excellence</span>
-        </div>
-        <Link href="/admin/login" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
+        </Link>
+        <Link href="/admin/host/login" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
           Admin Login
         </Link>
       </nav>

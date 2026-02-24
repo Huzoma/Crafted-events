@@ -134,3 +134,31 @@ export async function verifyScannerPin(pin) {
     return { success: false, error: "System error. Please try again." };
   }
 }
+
+export async function verifyHostLogin(email, loginCode) {
+  try {
+    // 1. Look up the Admin by email
+    const admin = await db.admin.findUnique({
+      where: { email: email.toLowerCase() }
+    });
+
+    // 2. Verify the login code matches
+    if (!admin || admin.loginCode !== loginCode) {
+      return { success: false, error: "Invalid email or login code." };
+    }
+
+    // 3. Issue the secure Host cookie
+    const cookieStore = await cookies();
+    cookieStore.set("host_session", "true", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24, // 24 hours for the host
+      path: "/",
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("Host Login Error:", error);
+    return { success: false, error: "System error. Please try again." };
+  }
+}
