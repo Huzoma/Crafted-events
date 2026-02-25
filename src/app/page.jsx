@@ -1,124 +1,100 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, MonitorPlay, Ticket, Calendar, MapPin, Aperture } from "lucide-react";
+import { MapPin, Globe, ArrowRight, Calendar, ShieldCheck, ScanLine } from "lucide-react";
 
-export default function LandingPage() {
+export default function Home() {
   return (
-    // Deep dark background stays to make your brand's blue pop
-    <main className="min-h-screen bg-[#09090B] text-slate-50 overflow-hidden relative selection:bg-blue-500/30">
+    <main className="min-h-screen bg-[#09090B] text-slate-50 overflow-hidden relative selection:bg-blue-500/30 flex flex-col">
       
-      {/* Brand-Aligned Ambient Glows */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-800/20 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+      {/* Ambient Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(white 1px, transparent 1px), linear-gradient(to right, white 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
 
-      {/* Navigation Area */}
-      <nav className="max-w-7xl mx-auto px-6 py-8 flex justify-between items-center relative z-10">
-        {/* Added font-heading here for the logo text */}
-        <Link href="/" className="text-xl font-heading font-bold tracking-tighter flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <Image 
-            src="/logo-CEX.png" 
-            alt="Crafted Excellence Logo" 
-            width={28} 
-            height={28} 
-            className="object-contain rounded-md" 
-          />
-          Crafted<span className="text-slate-500">Excellence</span>
-        </Link>
-        <Link href="/admin/host/login" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-          Admin Login
-        </Link>
+      {/* Top Navigation */}
+      <nav className="relative z-10 flex items-center justify-between p-6 lg:px-12 max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-3">
+          <Image src="/logo-CEX.png" alt="Crafted Excellence Logo" width={40} height={40} className="object-contain rounded-xl" />
+          <span className="text-xl font-heading font-bold tracking-tight">Crafted<span className="text-slate-500">Excellence</span></span>
+        </div>
+        <div className="flex items-center gap-2 text-sm font-medium text-slate-400 bg-white/5 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md">
+          <Calendar className="w-4 h-4" />
+          <span>October 24, 2026</span>
+        </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-6 py-12 md:py-24 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
+      {/* Main Content */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 w-full max-w-6xl mx-auto">
         
-        {/* LEFT COLUMN: The Copy & Buttons */}
-        <div className="flex flex-col items-start text-left">
-          
-          <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300 text-sm backdrop-blur-md">
+        {/* Hero Typography */}
+        <div className="text-center max-w-3xl mb-16 space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-4">
             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            Registration is Live
+            Registration Now Open
           </div>
-
-          {/* Added font-heading here for the massive headline */}
-          <h1 className="font-heading text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
-            Extraordinary <br />
-            events <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-700">start here.</span>
+          <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tighter leading-[1.1]">
+            Where craft meets <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">absolute mastery.</span>
           </h1>
-          
-          <p className="text-lg text-slate-400 mb-10 max-w-lg leading-relaxed font-light">
-            Join the premier gathering of innovators. Secure your spot to experience world-class insights—whether you are joining us in Lagos or streaming live globally.
+          <p className="text-lg md:text-xl text-slate-400 font-light leading-relaxed">
+            Join industry leaders and visionaries for an exclusive day of innovation, design, and elite networking. Choose your experience below.
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            {/* Primary Button */}
-            <Link 
-              href="/register/physical" 
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-white text-black rounded-full font-bold hover:bg-slate-200 transition-all hover:scale-105 active:scale-95"
-            >
-              Get Physical Ticket
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-            
-            {/* Secondary Button */}
-            <Link 
-              href="/register/virtual" 
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-slate-800/50 border border-slate-700 text-white rounded-full font-semibold hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
-            >
-              Register for Virtual
-              <MonitorPlay className="w-5 h-5" />
-            </Link>
-          </div>
         </div>
 
-        {/* RIGHT COLUMN: The Visual Element */}
-        <div className="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square flex items-center justify-center">
+        {/* The Gateway Cards */}
+        <div className="grid md:grid-cols-2 gap-6 w-full max-w-4xl">
           
-          {/* The Outer Container */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800/40 to-slate-900/40 rounded-[2rem] border border-white/10 shadow-2xl overflow-hidden flex items-center justify-center backdrop-blur-sm">
-            
-            {/* The Floating Glass Ticket */}
-            <div className="relative z-10 w-3/4 max-w-sm bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl transform -rotate-3 hover:rotate-0 transition-transform duration-500 ease-out">
-              <div className="flex justify-between items-start mb-10">
-                <div>
-                  <div className="text-xs text-blue-300 font-bold tracking-widest uppercase mb-1">VIP Pass</div>
-                  {/* Kept this standard font for readability on the ticket */}
-                  <div className="text-xl font-bold text-white">Crafted for Excellence</div>
-                </div>
-                <Ticket className="w-8 h-8 text-blue-400" />
-              </div>
-              
-              <div className="space-y-5 mb-10">
-                <div className="flex items-center gap-4 text-slate-300 text-sm">
-                  <div className="p-2 bg-white/5 rounded-lg"><Calendar className="w-4 h-4" /></div>
-                  <span>October 24, 2026</span>
-                </div>
-                <div className="flex items-center gap-4 text-slate-300 text-sm">
-                  <div className="p-2 bg-white/5 rounded-lg"><MapPin className="w-4 h-4" /></div>
-                  <span>Lagos, Nigeria</span>
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-white/10 flex items-center justify-between">
-                <div className="text-xs text-slate-400 uppercase tracking-widest">Admit One</div>
-                {/* Simulated Barcode */}
-                <div className="flex gap-1">
-                  <div className="w-1 h-4 bg-white/30 rounded-full" />
-                  <div className="w-2 h-4 bg-white/50 rounded-full" />
-                  <div className="w-1 h-4 bg-white/30 rounded-full" />
-                  <div className="w-3 h-4 bg-blue-500 rounded-full animate-pulse" />
-                  <div className="w-1 h-4 bg-white/30 rounded-full" />
-                </div>
-              </div>
+          {/* Physical Pass Card */}
+          <Link href="/register/physical" className="group relative bg-[#111113] border border-white/5 rounded-3xl p-8 hover:border-blue-500/30 transition-all hover:shadow-[0_0_40px_rgba(59,130,246,0.1)] overflow-hidden flex flex-col h-full">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[40px] rounded-full group-hover:bg-blue-500/20 transition-colors pointer-events-none" />
+            <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20 mb-6 text-blue-400 group-hover:scale-110 transition-transform">
+              <MapPin className="w-7 h-7" />
             </div>
+            <h2 className="text-2xl font-bold mb-3">Physical Pass</h2>
+            <p className="text-slate-400 mb-8 flex-1 leading-relaxed">
+              Experience the energy in person. Secure your seat at the venue, network directly with speakers, and enjoy exclusive physical access.
+            </p>
+            <div className="flex items-center gap-2 text-blue-400 font-bold mt-auto group-hover:gap-4 transition-all">
+              Claim Physical Ticket <ArrowRight className="w-5 h-5" />
+            </div>
+          </Link>
 
-            {/* Subtle inner blue glowing orbs behind the ticket */}
-            <div className="absolute top-10 right-10 w-32 h-32 bg-blue-600/20 blur-3xl rounded-full" />
-            <div className="absolute bottom-10 left-10 w-40 h-40 bg-blue-800/20 blur-3xl rounded-full" />
+          {/* Virtual Pass Card */}
+          <Link href="/register/virtual" className="group relative bg-[#111113] border border-white/5 rounded-3xl p-8 hover:border-purple-500/30 transition-all hover:shadow-[0_0_40px_rgba(168,85,247,0.1)] overflow-hidden flex flex-col h-full">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 blur-[40px] rounded-full group-hover:bg-purple-500/20 transition-colors pointer-events-none" />
+            <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center border border-purple-500/20 mb-6 text-purple-400 group-hover:scale-110 transition-transform">
+              <Globe className="w-7 h-7" />
+            </div>
+            <h2 className="text-2xl font-bold mb-3">Virtual Pass</h2>
+            <p className="text-slate-400 mb-8 flex-1 leading-relaxed">
+              Stream the entire event live from anywhere in the world in stunning high definition. Join the global community chat.
+            </p>
+            <div className="flex items-center gap-2 text-purple-400 font-bold mt-auto group-hover:gap-4 transition-all">
+              Claim Virtual Pass <ArrowRight className="w-5 h-5" />
+            </div>
+          </Link>
+
+        </div>
+      </div>
+
+      {/* Stealth Admin Footer */}
+      <footer className="relative z-10 border-t border-white/5 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-600">
+          <p>© 2026 Crafted Excellence. All rights reserved.</p>
+          
+          <div className="flex items-center gap-6">
+            <Link href="/admin/scanner/login" className="flex items-center gap-2 hover:text-slate-300 transition-colors">
+              <ScanLine className="w-4 h-4" />
+              Volunteer Scanner
+            </Link>
+            <Link href="/admin/host/login" className="flex items-center gap-2 hover:text-slate-300 transition-colors">
+              <ShieldCheck className="w-4 h-4" />
+              Host Portal
+            </Link>
           </div>
         </div>
+      </footer>
 
-      </section>
     </main>
   );
 }

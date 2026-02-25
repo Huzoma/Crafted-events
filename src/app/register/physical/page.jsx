@@ -1,20 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import QRCode from "react-qr-code";
 import { registerAttendee, getDashboardStats } from "@/lib/actions";
-import { Ticket, User, Mail, Phone, ArrowRight, Loader2, AlertTriangle, MonitorPlay, ArrowLeft, MapPin } from "lucide-react";
+import { Ticket, User, Mail, Phone, ArrowRight, Loader2, AlertTriangle, MonitorPlay, ArrowLeft, MapPin, CheckCircle } from "lucide-react";
 import Image from "next/image";
 
 export default function PhysicalRegistration() {
-  const router = useRouter();
-  
   // UI States
   const [isCheckingCapacity, setIsCheckingCapacity] = useState(true);
   const [isSoldOut, setIsSoldOut] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  
+  // New State: Holds the ID only if registration succeeds
+  const [successId, setSuccessId] = useState(null); 
 
   // Form State
   const [formData, setFormData] = useState({ name: "", email: "", phone: "" });
@@ -52,11 +53,13 @@ export default function PhysicalRegistration() {
     const result = await registerAttendee(submitData);
 
     if (result.success) {
-      router.push(`/register/success?id=${result.qrCodeId}`);
+      // Instantly swap the UI to the ticket instead of redirecting
+      setSuccessId(result.qrCodeId);
     } else {
       setErrorMsg(result.error);
-      setIsLoading(false);
     }
+    // Make sure loading state stops in both success and error cases
+    setIsLoading(false);
   }
 
   // --- UI RENDER: Loading State ---
@@ -99,7 +102,7 @@ export default function PhysicalRegistration() {
         {/* Back Button positioned relative to the right panel */}
         <Link 
           href="/" 
-          className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors z-20 font-medium text-sm"
+          className="absolute top-6 left-6 flex items-center gap-2 text-slate-400 group-hover:gap-4 hover:text-white transition-all z-20 font-medium text-sm"
           aria-label="Go back"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -111,13 +114,45 @@ export default function PhysicalRegistration() {
           {/* Decorative background glow for the card */}
           <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-blue-600/10 blur-[60px] rounded-full pointer-events-none" />
 
-          <div className="flex justify-center mb-6 relative z-10">
-            <Image src="/logo-CEX.png" alt="Crafted Excellence Logo" width={48} height={48} className="object-contain rounded-xl" />
-          </div>
+          {/* --- UI RENDER: INLINE SUCCESS TICKET --- */}
+          {successId ? (
+            <div className="text-center relative z-10 animate-in fade-in zoom-in duration-500">
+              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/20">
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              </div>
+              
+              <h1 className="text-2xl font-heading font-bold mb-2 text-white">You&apos;re All Set!</h1>
+              <p className="text-slate-400 mb-6 text-sm px-2">
+                Your physical seat is secured. A copy of this ticket has also been sent to <strong className="text-slate-200">{formData.email}</strong>.
+              </p>
 
-          {/* --- UI RENDER: Sold Out State --- */}
-          {isSoldOut ? (
+              {/* The Visual Ticket Card */}
+              <div className="bg-white p-6 rounded-3xl mx-auto inline-block shadow-2xl mb-6 relative border-4 border-slate-200">
+                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#18181b] rounded-full border-r border-slate-200"></div>
+                <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#18181b] rounded-full border-l border-slate-200"></div>
+                
+                <div className="flex justify-center mb-4">
+                  <Image src="/logo-CEX.png" alt="Logo" width={32} height={32} className="object-contain" />
+                </div>
+                
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] mb-4">Admit One</p>
+                
+                <div className="bg-white p-2">
+                  <QRCode value={successId} size={160} style={{ height: "auto", maxWidth: "100%", width: "100%" }} viewBox={`0 0 256 256`} />
+                </div>
+                <p className="text-slate-400 font-mono text-[10px] mt-4 tracking-widest truncate max-w-[160px]">{successId}</p>
+              </div>
+
+              <button onClick={() => window.location.reload()} className="w-full flex items-center justify-center gap-2 py-4 bg-white/5 border border-white/10 text-white rounded-xl font-bold hover:bg-white/10 transition-all">
+                Register Another Attendee
+              </button>
+            </div>
+          ) : isSoldOut ? (
+            /* --- UI RENDER: Sold Out State --- */
             <div className="text-center relative z-10">
+              <div className="flex justify-center mb-6 relative z-10">
+                <Image src="/logo-CEX.png" alt="Crafted Excellence Logo" width={48} height={48} className="object-contain rounded-xl" />
+              </div>
               <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
                 <AlertTriangle className="w-10 h-10 text-red-500" />
               </div>
@@ -145,6 +180,9 @@ export default function PhysicalRegistration() {
             
             /* --- UI RENDER: Active Registration Form --- */
             <div className="relative z-10">
+              <div className="flex justify-center mb-6 relative z-10">
+                <Image src="/logo-CEX.png" alt="Crafted Excellence Logo" width={48} height={48} className="object-contain rounded-xl" />
+              </div>
               <div className="text-center mb-8">
                 <h1 className="text-2xl font-heading font-bold mb-2">Secure Your Seat</h1>
                 <p className="text-slate-400 text-sm">Join us live in-person for Crafted for Excellence.</p>
