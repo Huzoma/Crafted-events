@@ -2,18 +2,36 @@
 
 import { cookies } from "next/headers";
 import nodemailer from "nodemailer";
+import QRCode from "qrcode";
+import { z } from "zod";
 import { db } from "./db"; // Ensure this matches your actual Prisma database import path!
+
+// ==========================================
+// DATA VALIDATION SCHEMAS (ZOD)
+// ==========================================
+const registrationSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  email: z.string().email("Please provide a valid email address."),
+  phone: z.string().min(10, "Please provide a valid phone number.").optional().or(z.literal("")),
+  ticketType: z.enum(["PHYSICAL", "VIRTUAL"])
+});
 
 // ==========================================
 // REGISTRATION & EMAIL LOGIC
 // ==========================================
 export async function registerAttendee(formData) {
-  const name = formData.get("name");
-  const email = formData.get("email");
-  const ticketType = formData.get("ticketType"); 
-  const phone = formData.get("phone") || null; 
-
   try {
+    // 1. Validate incoming data with Zod
+    const validatedData = registrationSchema.parse({
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone") || "",
+      ticketType: formData.get("ticketType"),
+    });
+
+    const { name, email, phone, ticketType } = validatedData;
+
+    // 2. Ensure the Event exists
     const event = await db.event.upsert({
       where: { slug: "crafted-excellence-2026" },
       update: {}, 
@@ -25,7 +43,7 @@ export async function registerAttendee(formData) {
       }
     });
 
-    // The Capacity Block Check
+    // 3. The Capacity Block Check
     if (ticketType === "PHYSICAL") {
       const currentPhysicalCount = await db.registration.count({
         where: { eventId: event.id, ticketType: "PHYSICAL" }
@@ -39,6 +57,7 @@ export async function registerAttendee(formData) {
       }
     }
 
+    // 4. Upsert User & Registration
     const user = await db.user.upsert({
       where: { email },
       update: { name, phone }, 
@@ -53,7 +72,17 @@ export async function registerAttendee(formData) {
       create: { eventId: event.id, userId: user.id, ticketType, accessCode }
     });
 
-    // Send the QR Code Email
+    // 5. Generate QR Code Buffer Locally (No external API needed!)
+    const qrBuffer = await QRCode.toBuffer(registration.qrCodeId, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#ffffff'
+      }
+    });
+
+    // 6. Send the Secure Email
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -62,8 +91,6 @@ export async function registerAttendee(formData) {
       },
     });
 
-    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${registration.qrCodeId}`;
-
     const mailOptions = {
       from: `"Crafted Excellence" <${process.env.EMAIL_USER}>`,
       to: email, 
@@ -71,16 +98,23 @@ export async function registerAttendee(formData) {
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8fafc; border-radius: 12px;">
           <h2 style="color: #0f172a;">You're in, ${name}!</h2>
-          <p style="color: #475569; line-height: 1.6;">Your physical seat for <strong>Crafted for Excellence</strong> is officially secured. Please present the QR code below to the volunteers at the entrance for scanning.</p>
+          <p style="color: #475569; line-height: 1.6;">Your ${ticketType.toLowerCase()} pass for <strong>Crafted for Excellence</strong> is officially secured.</p>
           
           <div style="text-align: center; margin: 40px 0; padding: 20px; background-color: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
-            <img src="${qrImageUrl}" alt="Your Ticket QR Code" style="width: 200px; height: 200px; border-radius: 8px;" />
+            <img src="cid:ticket-qrcode" alt="Your Ticket QR Code" style="width: 200px; height: 200px; border-radius: 8px;" />
             <p style="color: #94a3b8; font-size: 12px; font-family: monospace; margin-top: 16px; letter-spacing: 2px;">${registration.qrCodeId}</p>
           </div>
           
           <p style="color: #64748b; font-size: 14px;">We look forward to seeing you there!</p>
         </div>
-      `
+      `,
+      attachments: [
+        {
+          filename: 'ticket-qr.png',
+          content: qrBuffer,
+          cid: 'ticket-qrcode' // This links the image to the src="cid:..." in the HTML
+        }
+      ]
     };
 
     await transporter.sendMail(mailOptions);
@@ -88,7 +122,11 @@ export async function registerAttendee(formData) {
     return { success: true, accessCode: registration.accessCode, qrCodeId: registration.qrCodeId };
 
   } catch (error) {
-    console.error("Database or Email Error:", error);
+    console.error("Server Action Error:", error);
+    // Return friendly Zod errors if validation fails
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.errors[0].message };
+    }
     return { success: false, error: "Failed to process registration. Please try again." };
   }
 }
@@ -195,18 +233,15 @@ export async function revokeScannerPin(id, currentStatus) {
 // ==========================================
 export async function processScannedTicket(qrCodeId) {
   try {
-    // 1. Find the registration and include the user's details
     const registration = await db.registration.findFirst({
       where: { qrCodeId: qrCodeId },
       include: { user: true }
     });
 
-    // 2. If it doesn't exist, it's an invalid ticket
     if (!registration) {
       return { status: "INVALID", message: "This ticket does not exist in the system." };
     }
 
-    // 3. If they are already checked in, warn the volunteer
     if (registration.status === "CHECKED_IN") {
       return { 
         status: "ALREADY_USED", 
@@ -215,7 +250,6 @@ export async function processScannedTicket(qrCodeId) {
       };
     }
 
-    // 4. Mark them as checked in!
     await db.registration.update({
       where: { id: registration.id },
       data: { status: "CHECKED_IN" }
