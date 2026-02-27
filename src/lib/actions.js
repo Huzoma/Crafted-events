@@ -189,3 +189,46 @@ export async function revokeScannerPin(id, currentStatus) {
     return { success: false, error: "Failed to update PIN status." };
   }
 }
+
+// ==========================================
+// EVENT CHECK-IN LOGIC
+// ==========================================
+export async function processScannedTicket(qrCodeId) {
+  try {
+    // 1. Find the registration and include the user's details
+    const registration = await db.registration.findFirst({
+      where: { qrCodeId: qrCodeId },
+      include: { user: true }
+    });
+
+    // 2. If it doesn't exist, it's an invalid ticket
+    if (!registration) {
+      return { status: "INVALID", message: "This ticket does not exist in the system." };
+    }
+
+    // 3. If they are already checked in, warn the volunteer
+    if (registration.status === "CHECKED_IN") {
+      return { 
+        status: "ALREADY_USED", 
+        name: registration.user.name, 
+        message: "This guest has already checked in." 
+      };
+    }
+
+    // 4. Mark them as checked in!
+    await db.registration.update({
+      where: { id: registration.id },
+      data: { status: "CHECKED_IN" }
+    });
+
+    return { 
+      status: "VALID", 
+      name: registration.user.name, 
+      message: `${registration.ticketType} pass successfully verified.` 
+    };
+
+  } catch (error) {
+    console.error("Ticket Scan Error:", error);
+    return { status: "INVALID", message: "System error reading ticket." };
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Scanner } from '@yudiel/react-qr-scanner';
-import { verifyScannerPin } from "@/lib/actions";
+import { processScannedTicket } from "@/lib/actions"; // Corrected Import
 import { CheckCircle, XCircle, AlertTriangle, ScanLine, RotateCcw } from "lucide-react";
 
 export default function ScannerDashboard() {
@@ -16,8 +16,8 @@ export default function ScannerDashboard() {
     setIsProcessing(true);
     const rawQrCodePayload = detectedCodes[0].rawValue;
 
-    // Send the scanned code to our Server Action
-    const result = await verifyScannerPin(rawQrCodePayload);
+    // Send the scanned code to our correct Server Action
+    const result = await processScannedTicket(rawQrCodePayload); // Corrected Function Call
     setScanResult(result);
     setIsProcessing(false);
   }
